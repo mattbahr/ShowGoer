@@ -20,20 +20,40 @@ export class EventService {
   }
 
   getEvents() {
-    this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
-      console.log(response);
-      this.fbApiRequest('me/likes?fields=name,id,category,events');
-    });
+     this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
+        console.log(response);
+        this.fbPagedRequest('me/likes?fields=name,id,category').then(res => { console.log(res); });
+     })
+ }
+
+  private fbPagedRequest(requestUrl): Promise<any> {
+     return new Promise((resolve, reject) => {
+        var pages = [];
+
+        this.fbApiRequest(requestUrl)
+          .then(res => {
+             if(res.data) {
+                pages = pages.concat(res.data);
+             }
+
+             if(res.paging && res.paging.next) {
+                this.fbPagedRequest(res.paging.next).then(result => {
+                   pages = pages.concat(result);
+                   resolve(pages);
+                });
+             } else {
+                resolve(pages);
+             }
+          });
+     });
   }
 
-  private fbApiRequest(requestUrl) {
-    this.fb.api(requestUrl)
-      .then(res => {
-        console.log(res);
-
-        if(res.paging && res.paging.next) {
-          this.fbApiRequest(res.paging.next);
-        }
-      }).catch(e => console.error(e));
+  private fbApiRequest(requestUrl): Promise<any> {
+     return new Promise((resolve, reject) => {
+        this.fb.api(requestUrl)
+         .then(res => {
+            resolve(res);
+         }).catch(e => reject(e));
+     });
   }
 }
