@@ -19,21 +19,20 @@ export class EventService {
     fb.init(initParams);
   }
 
-  // For some reason this only returns 79 events when I test. Need to figure out why
   getEvents() {
-    this.fb.login().then((response: LoginResponse) => {
+    this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
       console.log(response);
-      this.getEventsRequest('search?q=*&type=event&categories=["ARTS_ENTERTAINMENT"]');
+      this.fbApiRequest('me/likes?fields=name,id,category,events');
     });
   }
 
-  private getEventsRequest(requestUrl) {
+  private fbApiRequest(requestUrl) {
     this.fb.api(requestUrl)
       .then(res => {
         console.log(res);
-        
+
         if(res.paging && res.paging.next) {
-          this.getEventsRequest(res.paging.next);
+          this.fbApiRequest(res.paging.next);
         }
       }).catch(e => console.error(e));
   }
