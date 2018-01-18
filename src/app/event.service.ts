@@ -6,29 +6,30 @@ import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook'
 @Injectable()
 export class EventService {
 
-   startTime: Date;
-   endTime: Date;
-
    constructor(private fb: FacebookService, private http: Http) {
       let initParams: InitParams = {
          appId: '410586846011126',
          xfbml: true,
-         version: 'v2.8'
+         version: 'v2.11'
       };
 
       fb.init(initParams);
    }
 
-   getEvents() {
-      this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
-         this.fbPagedRequest('me/likes?fields=name,id,category').then(likes => {
-            for(var i = 0; i < likes.length; i++) {
-               this.fbPagedRequest(likes[i].id + '/events').then(events => {
-                  console.log(events);
-               });
-            }
-         });
-      })
+   getEvents(): Promise<any> {
+      return new Promise((resolve, reject) => {
+         this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
+            this.fbPagedRequest('me/likes?fields=id').then(likes => {
+               var promises = [];
+
+               for(var i = 0; i < likes.length; i++) {
+                  promises.push(this.fbPagedRequest(likes[i].id + '/events'));
+               }
+
+               Promise.all(promises).then(events => resolve(events));
+            }).catch(e => reject(e));
+         }).catch(e => reject(e));
+      });
    }
 
    private fbPagedRequest(requestUrl): Promise<any> {
@@ -48,7 +49,7 @@ export class EventService {
             } else {
                resolve(pages);
             }
-         });
+         }).catch(e => reject(e));
       });
    }
 
