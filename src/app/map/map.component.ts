@@ -21,13 +21,13 @@ export class MapComponent implements OnInit {
 
    ngOnInit() {
       this.getLocation();
+      this.getEvents();
    }
 
    getLocation() {
       this.geolocationService.getLocation().then((response) => {
          this.lat = response.coords.latitude;
          this.lng = response.coords.longitude;
-         this.getEvents();
       }, function(error) {
          console.error("Failed to locate user.", error);
       });
@@ -35,6 +35,8 @@ export class MapComponent implements OnInit {
 
    getEvents() {
       this.eventService.getLikedPages().then(pages => {
+         var eventMap = new Map();
+
          for(var i = 0; i < pages.length; i++) {
             this.eventService.getEventsForLikedPage(pages[i]).then(events => {
                for(var j = 0; j < events.length; j++) {
@@ -48,7 +50,6 @@ export class MapComponent implements OnInit {
                   } else {
                      if(today.getTime() == eventDate.getTime()) {
                         // Want to animate markers so they drop from ceiling
-                        // Consider threading when pushing events onto the array
                         this.markers.push({
                            lat: events[j].place.location.latitude,
                            lng: events[j].place.location.longitude,
@@ -56,6 +57,15 @@ export class MapComponent implements OnInit {
                      }
 
                      // Want to map events to their date and save as a cookie
+                     if(eventMap.has(eventDate.getTime())) {
+                        var ary = eventMap.get(eventDate.getTime());
+                        ary.push(events[j]);
+                        eventMap.set(eventDate.getTime(), ary);
+                     } else {
+                        eventMap.set(eventDate.getTime(), [events[j]]);
+                     }
+
+                     console.log(eventMap);
                   }
                }
             })
