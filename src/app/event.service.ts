@@ -16,17 +16,19 @@ export class EventService {
       fb.init(initParams);
    }
 
-   getEvents(): Promise<any> {
+   getEventsForLikedPage(page): Promise<any> {
+      return new Promise((resolve, reject) => {
+         this.fbPagedRequest(page.id + '/events').then(events => {
+            resolve(events);
+         }).catch(e => reject(e));
+      });
+   }
+
+   getLikedPages(): Promise<any> {
       return new Promise((resolve, reject) => {
          this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
             this.fbPagedRequest('me/likes?fields=id').then(likes => {
-               var promises = [];
-
-               for(var i = 0; i < likes.length; i++) {
-                  promises.push(this.fbPagedRequest(likes[i].id + '/events'));
-               }
-
-               Promise.all(promises).then(events => resolve(events));
+               resolve(likes);
             }).catch(e => reject(e));
          }).catch(e => reject(e));
       });
