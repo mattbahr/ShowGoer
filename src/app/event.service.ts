@@ -3,6 +3,8 @@ import { Http } from '@angular/http';
 
 import { FacebookService, InitParams, LoginResponse } from 'ngx-facebook'
 
+import { Event } from './event';
+
 @Injectable()
 export class EventService {
 
@@ -16,7 +18,7 @@ export class EventService {
       fb.init(initParams);
    }
 
-   getEventsForLikedPage(page): Promise<any> {
+   getEventsForLikedPage(page): Promise<Event[]> {
       return new Promise((resolve, reject) => {
          this.fbPagedRequest(page.id + '/events').then(events => {
             resolve(events);
