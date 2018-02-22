@@ -9,5 +9,5 @@ export class Event {
    start_time: Date;
    end_time: Date;
    place: Place;
-
+   
 }

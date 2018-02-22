@@ -1,5 +1,11 @@
 <!-- this creates a google map on the page with the given lat/lng from -->
 <!-- the component as the initial center of the map: -->
 <agm-map [latitude]="lat" [longitude]="lng" [zoom]="zoom" [styles]="styles">
-   <agm-marker *ngFor="let m of markers" [latitude]="m.event.place.location.latitude" [longitude]="m.event.place.location.longitude"></agm-marker>
+   <agm-marker *ngFor="let event of events"
+      [latitude]="event.place.location.latitude"
+      [longitude]="event.place.location.longitude">
+      <agm-info-window>
+         <app-event [event]="event"></app-event>
+      </agm-info-window>
+   </agm-marker>
 </agm-map>

@@ -16,7 +16,7 @@ export class MapComponent implements OnInit {
    lng: number = -97.7431;
    zoom: number = 12;
    styles = STYLES;
-   markers: Marker[] = [];
+   events: Event[] = [];
    eventMap = new Map();
 
    constructor(private geolocationService: GeolocationService, private eventService: EventService) { }
@@ -49,9 +49,7 @@ export class MapComponent implements OnInit {
                      break;
                   } else {
                      if(today.getTime() == eventDate.getTime()) {
-                        this.markers.push({
-                           event: events[j]
-                        });
+                        this.events.push(events[j]);
                      }
 
                      // Maps events to their dates
@@ -68,9 +66,4 @@ export class MapComponent implements OnInit {
          }
       });
    }
-}
-
-// Want to add marker animation to have it drop from the top of the screen
-interface Marker {
-   event: Event;
 }

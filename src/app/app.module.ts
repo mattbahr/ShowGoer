@@ -10,11 +10,13 @@ import { GeolocationService } from './geolocation.service';
 
 import { FacebookModule } from 'ngx-facebook';
 import { EventService } from './event.service';
+import { EventComponent } from './event/event.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    MapComponent
+    MapComponent,
+    EventComponent
   ],
   imports: [
     BrowserModule,
