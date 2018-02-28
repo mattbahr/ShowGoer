@@ -21,10 +21,12 @@ export class MapComponent implements OnInit {
    styles = STYLES;
    events: Event[] = [];
    eventMap = new Map();
+   displayDate: string;
 
    constructor(private geolocationService: GeolocationService, private eventService: EventService) { }
 
    ngOnInit() {
+      this.displayDate = this.getDatePickerString(new Date());
       this.getLocation();
       this.getEvents();
    }
@@ -55,12 +57,12 @@ export class MapComponent implements OnInit {
 
                   if(today.getTime() > eventDate.getTime()) {
                      break;
-                  } else {
-                     if(today.getTime() == eventDate.getTime()
-                        && events[j].place 
-                        && events[j].place.location
-                        && events[j].place.location.latitude
-                        && events[j].place.location.longitude) {
+                  } else if(events[j].place
+                     && events[j].place.location
+                     && events[j].place.location.latitude
+                     && events[j].place.location.longitude){
+
+                     if(today.getTime() == eventDate.getTime()) {
                         this.events.push(events[j]);
                      }
 
@@ -74,8 +76,31 @@ export class MapComponent implements OnInit {
                      }
                   }
                }
-            })
+            });
          }
       }).catch(e => console.error(e));
+   }
+
+   onDisplayDateChange() {
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var inputDate = new Date(parseInt(this.displayDate.substring(0, 4)), parseInt(this.displayDate.substring(5, 7)) - 1, parseInt(this.displayDate.substring(8)));
+
+      if(inputDate < today) {
+         this.displayDate = this.getDatePickerString();
+         (<HTMLInputElement>document.getElementById('dateInput')).value = this.displayDate;
+      } else {
+         this.events = this.eventMap.get(inputDate.getTime());
+      }
+   }
+
+   getDatePickerString(dt = null) {
+      if(!dt) {
+         dt = new Date();
+      }
+
+      return dt.getFullYear() + "-" +
+         ("0" + (dt.getMonth() + 1)).slice(-2) + "-" +
+         ("0" + dt.getDate()).slice(-2);
    }
 }

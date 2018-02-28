@@ -1,6 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpModule } from '@angular/http';
+import { FormsModule } from '@angular/forms';
 
 import { AgmCoreModule } from '@agm/core';
 
@@ -21,6 +22,7 @@ import { EventComponent } from './event/event.component';
   imports: [
     BrowserModule,
     HttpModule,
+    FormsModule,
     AgmCoreModule.forRoot({
       apiKey: 'AIzaSyD6k-2yBM1dT5MiwWE3hiQUBjDG8eVZ9Go'
     }),
