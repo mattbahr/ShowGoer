@@ -6,8 +6,8 @@ export class Event {
    id: number;
    name: string;
    description: string;
-   start_time: Date;
-   end_time: Date;
+   start_time: string;
+   end_time: string;
    place: Place;
-   
+
 }

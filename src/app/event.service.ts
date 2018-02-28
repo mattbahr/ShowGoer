@@ -12,7 +12,7 @@ export class EventService {
       let initParams: InitParams = {
          appId: '410586846011126',
          xfbml: true,
-         version: 'v2.11'
+         version: 'v2.12'
       };
 
       fb.init(initParams);

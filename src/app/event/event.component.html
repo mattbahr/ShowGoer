@@ -1,8 +1,8 @@
 <div *ngIf="event && event.name">
    <h2>{{event.name}}</h2>
-   <div *ngIf="event.start_time && !event.end_time">{{event.start_time}}</div>
-   <div *ngIf="event.start_time && event.end_time">{{event.start_time}} to {{event.end_time}}</div>
+   <div *ngIf="event.start_time">{{getDateString()}}</div>
    <div *ngIf="event.place.name || event.place.location.street">
+      <br/>
       <div *ngIf="event.place.name">{{event.place.name}}</div>
       <div *ngIf="event.place.location.street && event.place.location.city">{{event.place.location.street}}, {{event.place.location.city}} {{event.place.location.state}} {{event.place.location.zip}}</div>
       <div *ngIf="event.place.location.street && !event.place.location.city">{{event.place.location.street}}</div>

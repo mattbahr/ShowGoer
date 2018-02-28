@@ -5,6 +5,9 @@ import { EventService } from '../event.service';
 import { STYLES } from './map-styles';
 import { Event } from '../event';
 
+/* Test code */
+import { EVENTS } from '../test/mock-events';
+
 @Component({
    selector: 'app-map',
    templateUrl: './map.component.html',
@@ -36,11 +39,16 @@ export class MapComponent implements OnInit {
    }
 
    getEvents() {
+
+      // Test code
+      //this.events = EVENTS;
+
+      // Production code
       this.eventService.getLikedPages().then(pages => {
          for(var i = 0; i < pages.length; i++) {
             this.eventService.getEventsForLikedPage(pages[i]).then(events => {
                for(var j = 0; j < events.length; j++) {
-                  var eventDate = (new Date(events[j].start_time));
+                  var eventDate = new Date(events[j].start_time);
                   eventDate.setHours(0, 0, 0, 0);
                   var today = new Date();
                   today.setHours(0, 0, 0, 0);
@@ -48,7 +56,11 @@ export class MapComponent implements OnInit {
                   if(today.getTime() > eventDate.getTime()) {
                      break;
                   } else {
-                     if(today.getTime() == eventDate.getTime()) {
+                     if(today.getTime() == eventDate.getTime()
+                        && events[j].place 
+                        && events[j].place.location
+                        && events[j].place.location.latitude
+                        && events[j].place.location.longitude) {
                         this.events.push(events[j]);
                      }
 
@@ -64,6 +76,6 @@ export class MapComponent implements OnInit {
                }
             })
          }
-      });
+      }).catch(e => console.error(e));
    }
 }
