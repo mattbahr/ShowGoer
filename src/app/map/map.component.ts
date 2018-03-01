@@ -52,17 +52,22 @@ export class MapComponent implements OnInit {
                for(var j = 0; j < events.length; j++) {
                   var eventDate = new Date(events[j].start_time);
                   eventDate.setHours(0, 0, 0, 0);
-                  var today = new Date();
-                  today.setHours(0, 0, 0, 0);
+                  var dt = new Date();
+                  dt.setHours(0, 0, 0, 0);
 
-                  if(today.getTime() > eventDate.getTime()) {
+                  // To do: Add logic to exclude events that happened today but
+                  // already ended
+
+                  if(dt.getTime() > eventDate.getTime()) {
                      break;
                   } else if(events[j].place
                      && events[j].place.location
                      && events[j].place.location.latitude
                      && events[j].place.location.longitude){
 
-                     if(today.getTime() == eventDate.getTime()) {
+                     dt = new Date(parseInt(this.displayDate.substring(0, 4)), parseInt(this.displayDate.substring(5, 7)) - 1, parseInt(this.displayDate.substring(8)));
+
+                     if(dt.getTime() == eventDate.getTime()) {
                         this.events.push(events[j]);
                      }
 
