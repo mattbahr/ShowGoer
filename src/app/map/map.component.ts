@@ -42,7 +42,7 @@ export class MapComponent implements OnInit {
 
    getEvents() {
 
-      // Test code
+      /* Test code */
       //this.events = EVENTS;
 
       // Production code
@@ -55,9 +55,6 @@ export class MapComponent implements OnInit {
                   var dt = new Date();
                   dt.setHours(0, 0, 0, 0);
 
-                  // To do: Add logic to exclude events that happened today but
-                  // already ended
-
                   if(dt.getTime() > eventDate.getTime()) {
                      break;
                   } else if(events[j].place
@@ -65,7 +62,21 @@ export class MapComponent implements OnInit {
                      && events[j].place.location.latitude
                      && events[j].place.location.longitude){
 
-                     dt = new Date(parseInt(this.displayDate.substring(0, 4)), parseInt(this.displayDate.substring(5, 7)) - 1, parseInt(this.displayDate.substring(8)));
+                     // Exclude events that happened today but already ended
+                     if(events[j].end_time) {
+                        var now = new Date();
+                        var eventEndTime = new Date(events[j].end_time);
+
+                        if(now.getTime() >= eventEndTime.getTime()) {
+                           continue;
+                        }
+                     }
+
+                     // Create a marker for events happening on the desired
+                     // date
+                     dt = new Date(parseInt(this.displayDate.substring(0, 4)),
+                        parseInt(this.displayDate.substring(5, 7)) - 1,
+                        parseInt(this.displayDate.substring(8)));
 
                      if(dt.getTime() == eventDate.getTime()) {
                         this.events.push(events[j]);
@@ -89,7 +100,9 @@ export class MapComponent implements OnInit {
    onDisplayDateChange() {
       var today = new Date();
       today.setHours(0, 0, 0, 0);
-      var inputDate = new Date(parseInt(this.displayDate.substring(0, 4)), parseInt(this.displayDate.substring(5, 7)) - 1, parseInt(this.displayDate.substring(8)));
+      var inputDate = new Date(parseInt(this.displayDate.substring(0, 4)),
+         parseInt(this.displayDate.substring(5, 7)) - 1,
+         parseInt(this.displayDate.substring(8)));
 
       if(inputDate < today) {
          this.displayDate = this.getDatePickerString();
