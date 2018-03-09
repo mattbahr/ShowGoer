@@ -73,6 +73,9 @@ export class MapComponent implements OnInit {
                         && events[j].place.location.latitude
                         && events[j].place.location.longitude) {
 
+                        // Need to figure out what happens when multiple events
+                        // happen at the same location on the same date
+
                         // Create a marker for events happening on the desired
                         // date
                         dt = new Date(parseInt(this.displayDate.substring(0, 4)),
@@ -118,11 +121,28 @@ export class MapComponent implements OnInit {
          parseInt(this.displayDate.substring(5, 7)) - 1,
          parseInt(this.displayDate.substring(8)));
 
-      if(inputDate < today) {
+      if(inputDate.getTime() < today.getTime()) {
          this.displayDate = this.getDatePickerString();
          (<HTMLInputElement>document.getElementById('dateInput')).value = this.displayDate;
       } else {
          this.events = this.eventMap.get(inputDate.getTime());
+
+         // Do a check to make sure events have not ended already when the
+         // current date is selected
+         if(inputDate.getTime() == today.getTime()) {
+            today = new Date();
+
+            for(var i = 0; i < this.events.length; i++) {
+               if(this.events[i].end_time) {
+                  var endDate = new Date(this.events[i].end_time);
+
+                  if(today.getTime() >= endDate.getTime()) {
+                     this.events.splice(i, 1);
+                     this.eventMap.set(inputDate.getTime(), this.events);
+                  }
+               }
+            }
+         }
       }
    }
 
