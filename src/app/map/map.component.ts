@@ -129,7 +129,7 @@ export class MapComponent implements OnInit {
 
          // Do a check to make sure events have not ended already when the
          // current date is selected
-         if(inputDate.getTime() == today.getTime()) {
+         if(inputDate.getTime() == today.getTime() && this.events) {
             today = new Date();
 
             for(var i = 0; i < this.events.length; i++) {
