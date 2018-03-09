@@ -1,11 +1,11 @@
-<!-- this creates a google map on the page with the given lat/lng from -->
-<!-- the component as the initial center of the map: -->
 <div id="datePicker">
    <input id = "dateInput" type="date" min="{{getDatePickerString()}}" required [(ngModel)]="displayDate" (ngModelChange)="onDisplayDateChange()">
 </div>
 
+<!-- this creates a google map on the page with the given lat/lng from -->
+<!-- the component as the initial center of the map: -->
 <agm-map [latitude]="lat" [longitude]="lng" [zoom]="zoom" [styles]="styles">
-   <!-- Add animation to marker when it drops -->
+   <!-- Add animation to marker to make it drop from the top of the screen -->
    <agm-marker *ngFor="let event of events"
       [latitude]="event.place.location.latitude"
       [longitude]="event.place.location.longitude">

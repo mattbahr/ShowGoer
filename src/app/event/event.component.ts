@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 
 import { Event } from '../event';
+import { EventService } from '../event.service';
 
 enum DaysOfTheWeek {
    Sunday,
@@ -36,9 +37,43 @@ export class EventComponent implements OnInit {
 
    @Input() event: Event;
 
-   constructor() { }
+   going: boolean = false;
+   interested: boolean = false;
+
+   constructor(private eventService: EventService) { }
 
    ngOnInit() {
+      //setAttendanceFlags();
+   }
+
+   setAttendanceFlags() {
+      this.eventService.getEventAttendees(this.event).then(attendees => {
+         this.checkForIdInList(attendees).then(isGoing => {
+            this.going = isGoing;
+
+            if(!this.going) {
+               this.eventService.getEventInterested(this.event).then(interested => {
+                  this.checkForIdInList(interested).then(isInterested => {
+                     this.interested = isInterested;
+                  }).catch(e => console.error(e));
+               }).catch(e => console.error(e));
+            }
+         }).catch(e => console.error(e));
+      }).catch(e => console.error(e));
+   }
+
+   checkForIdInList(list): Promise<boolean> {
+      return new Promise((resolve, reject) => {
+         this.eventService.getUserId().then(userId => {
+            for(var i = 0; i < list.length; i++) {
+               if(userId == list[i].id) {
+                  resolve(true);
+               }
+            }
+
+            resolve(false);
+         }).catch(e => reject(e));
+      });
    }
 
    getDateString(): string {

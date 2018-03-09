@@ -45,55 +45,69 @@ export class MapComponent implements OnInit {
       /* Test code */
       //this.events = EVENTS;
 
-      // Production code
-      this.eventService.getLikedPages().then(pages => {
-         for(var i = 0; i < pages.length; i++) {
-            this.eventService.getEventsForLikedPage(pages[i]).then(events => {
-               for(var j = 0; j < events.length; j++) {
-                  var eventDate = new Date(events[j].start_time);
-                  eventDate.setHours(0, 0, 0, 0);
-                  var dt = new Date();
-                  dt.setHours(0, 0, 0, 0);
+      /* Production code */
+      this.eventService.fbLogin().then(response => {
+         this.eventService.getLikedPages().then(pages => {
+            for(var i = 0; i < pages.length; i++) {
+               this.eventService.getEventsForLikedPage(pages[i]).then(events => {
+                  for(var j = 0; j < events.length; j++) {
+                     var eventDate = new Date(events[j].start_time);
+                     eventDate.setHours(0, 0, 0, 0);
+                     var dt = new Date();
 
-                  if(dt.getTime() > eventDate.getTime()) {
-                     break;
-                  } else if(events[j].place
-                     && events[j].place.location
-                     && events[j].place.location.latitude
-                     && events[j].place.location.longitude){
-
-                     // Exclude events that happened today but already ended
+                     // Exclude events that have already ended
                      if(events[j].end_time) {
-                        var now = new Date();
                         var eventEndTime = new Date(events[j].end_time);
 
-                        if(now.getTime() >= eventEndTime.getTime()) {
+                        if(dt.getTime() >= eventEndTime.getTime()) {
                            continue;
                         }
                      }
 
-                     // Create a marker for events happening on the desired
-                     // date
-                     dt = new Date(parseInt(this.displayDate.substring(0, 4)),
-                        parseInt(this.displayDate.substring(5, 7)) - 1,
-                        parseInt(this.displayDate.substring(8)));
+                     dt.setHours(0, 0, 0, 0);
 
-                     if(dt.getTime() == eventDate.getTime()) {
-                        this.events.push(events[j]);
-                     }
+                     if(dt.getTime() > eventDate.getTime() && !events[j].end_time) {
+                        continue;
+                     } else if(events[j].place
+                        && events[j].place.location
+                        && events[j].place.location.latitude
+                        && events[j].place.location.longitude) {
 
-                     // Maps events to their dates
-                     if(this.eventMap.has(eventDate.getTime())) {
-                        var ary = this.eventMap.get(eventDate.getTime());
-                        ary.push(events[j]);
-                        this.eventMap.set(eventDate.getTime(), ary);
-                     } else {
-                        this.eventMap.set(eventDate.getTime(), [events[j]]);
+                        // Create a marker for events happening on the desired
+                        // date
+                        dt = new Date(parseInt(this.displayDate.substring(0, 4)),
+                           parseInt(this.displayDate.substring(5, 7)) - 1,
+                           parseInt(this.displayDate.substring(8)));
+
+                        if(dt.getTime() == eventDate.getTime()
+                           || (events[j].end_time
+                              && dt.getTime() >= eventDate.getTime()
+                              && dt.getTime() <= eventEndTime.getTime())) {
+                           this.events.push(events[j]);
+                        }
+
+                        // Maps events to their dates
+                        if(!events[j].end_time) {
+                           eventEndTime = new Date(eventDate);
+                           eventEndTime.setDate(eventEndTime.getDate() + 1);
+                        }
+
+                        while(eventDate.getTime() < eventEndTime.getTime()) {
+                           if(this.eventMap.has(eventDate.getTime())) {
+                              var ary = this.eventMap.get(eventDate.getTime());
+                              ary.push(events[j]);
+                              this.eventMap.set(eventDate.getTime(), ary);
+                           } else {
+                              this.eventMap.set(eventDate.getTime(), [events[j]]);
+                           }
+
+                           eventDate.setDate(eventDate.getDate() + 1);
+                        }
                      }
                   }
-               }
-            });
-         }
+               });
+            }
+         }).catch(e => console.error(e));
       }).catch(e => console.error(e));
    }
 

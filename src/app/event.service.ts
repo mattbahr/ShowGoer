@@ -8,6 +8,12 @@ import { Event } from './event';
 @Injectable()
 export class EventService {
 
+   private userId: number;
+   private scope: string = 'user_likes';
+
+   // Want to implement a method to RSVP for an event; just make a POST request
+   // to {event_id}/attending or {event_id}/interested
+
    constructor(private fb: FacebookService, private http: Http) {
       let initParams: InitParams = {
          appId: '410586846011126',
@@ -16,6 +22,27 @@ export class EventService {
       };
 
       fb.init(initParams);
+   }
+
+   getUserId(): Promise<number> {
+      return new Promise((resolve, reject) => {
+         if(this.userId) {
+            resolve(this.userId);
+         } else {
+            this.fbApiRequest('me').then(me => {
+               this.userId = me.id;
+               resolve(this.userId);
+            })
+         }
+      })
+   }
+
+   fbLogin(): Promise<LoginResponse> {
+      return new Promise((resolve, reject) => {
+         this.fb.login({scope: this.scope}).then((response: LoginResponse) => {
+            resolve(response);
+         }).catch(e => reject(e));
+      })
    }
 
    getEventsForLikedPage(page): Promise<Event[]> {
@@ -28,12 +55,26 @@ export class EventService {
 
    getLikedPages(): Promise<any> {
       return new Promise((resolve, reject) => {
-         this.fb.login({scope: 'user_likes'}).then((response: LoginResponse) => {
-            this.fbPagedRequest('me/likes?fields=id').then(likes => {
-               resolve(likes);
-            }).catch(e => reject(e));
+         this.fbPagedRequest('me/likes?fields=id').then(likes => {
+            resolve(likes);
          }).catch(e => reject(e));
       });
+   }
+
+   getEventAttendees(event): Promise<any> {
+      return new Promise((resolve, reject) => {
+         this.fbPagedRequest(event.id + '/attending').then(attendees => {
+            resolve(attendees);
+         }).catch(e => reject(e));
+      })
+   }
+
+   getEventInterested(event): Promise<any> {
+      return new Promise((resolve, reject) => {
+         this.fbPagedRequest(event.id + '/interested').then(interested => {
+            resolve(interested);
+         }).catch(e => reject(e));
+      })
    }
 
    private fbPagedRequest(requestUrl): Promise<any> {
