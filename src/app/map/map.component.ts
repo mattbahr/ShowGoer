@@ -138,10 +138,11 @@ export class MapComponent implements OnInit {
 
                   if(today.getTime() >= endDate.getTime()) {
                      this.events.splice(i, 1);
-                     this.eventMap.set(inputDate.getTime(), this.events);
                   }
                }
             }
+
+            this.eventMap.set(inputDate.getTime(), this.events);
          }
       }
    }
