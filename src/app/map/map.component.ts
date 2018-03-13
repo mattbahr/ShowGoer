@@ -138,6 +138,7 @@ export class MapComponent implements OnInit {
 
                   if(today.getTime() >= endDate.getTime()) {
                      this.events.splice(i, 1);
+                     i--;
                   }
                }
             }
