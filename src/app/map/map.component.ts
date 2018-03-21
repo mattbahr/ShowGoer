@@ -73,29 +73,46 @@ export class MapComponent implements OnInit {
                         && events[j].place.location.latitude
                         && events[j].place.location.longitude) {
 
-                        // Need to figure out what happens when multiple events
-                        // happen at the same location on the same date
-
                         // Create a marker for events happening on the desired
                         // date
                         dt = new Date(parseInt(this.displayDate.substring(0, 4)),
                            parseInt(this.displayDate.substring(5, 7)) - 1,
                            parseInt(this.displayDate.substring(8)));
 
-                        if(dt.getTime() == eventDate.getTime()
-                           || (events[j].end_time
-                              && dt.getTime() >= eventDate.getTime()
-                              && dt.getTime() <= eventEndTime.getTime())) {
+                        if(dt.getTime() == eventDate.getTime()) {
                            this.events.push(events[j]);
+                        } else if(events[j].end_time && dt.getTime() > eventDate.getTime()) {
+                           dt.setHours(6, 0, 0, 0);
+
+                           if(dt.getTime() <= eventEndTime.getTime()) {
+                              this.events.push(events[j]);
+                           }
                         }
 
-                        // Maps events to their dates
+                        // Need to figure out what to do when multiple events
+                        // happen on the same date at the same place
+
+                        // Need to account for events that happen over a range
+                        // of dates but don't happen continuously over the range
+
                         if(!events[j].end_time) {
                            eventEndTime = new Date(eventDate);
                            eventEndTime.setDate(eventEndTime.getDate() + 1);
                         }
 
+                        // Maps events to their dates
                         while(eventDate.getTime() < eventEndTime.getTime()) {
+                           var eventEndDate = new Date(eventEndTime);
+                           eventEndDate.setHours(0, 0, 0, 0);
+
+                           if(eventDate.getTime() == eventEndDate.getTime()) {
+                              eventEndDate.setHours(6, 0, 0, 0);
+
+                              if(eventEndDate.getTime() >= eventEndTime.getTime()) {
+                                 break;
+                              }
+                           }
+
                            if(this.eventMap.has(eventDate.getTime())) {
                               var ary = this.eventMap.get(eventDate.getTime());
                               ary.push(events[j]);
