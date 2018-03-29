@@ -4,6 +4,7 @@ import { GeolocationService } from '../geolocation.service';
 import { EventService } from '../event.service';
 import { STYLES } from './map-styles';
 import { Event } from '../event';
+import { Place } from '../place';
 
 /* Test code */
 import { EVENTS } from '../test/mock-events';
@@ -19,8 +20,9 @@ export class MapComponent implements OnInit {
    lng: number = -97.7431;
    zoom: number = 12;
    styles = STYLES;
-   events: Event[] = [];
+   places: Place[] = [];
    eventMap = new Map();
+   placeMap = new Map();
    displayDate: string;
 
    constructor(private geolocationService: GeolocationService, private eventService: EventService) { }
@@ -40,6 +42,8 @@ export class MapComponent implements OnInit {
       });
    }
 
+   // Also want to pull events for which the user has RSVP'd or is a host,
+   // regardless of what pages they're tied to
    getEvents() {
 
       /* Test code */
@@ -79,18 +83,35 @@ export class MapComponent implements OnInit {
                            parseInt(this.displayDate.substring(5, 7)) - 1,
                            parseInt(this.displayDate.substring(8)));
 
-                        if(dt.getTime() == eventDate.getTime()) {
-                           this.events.push(events[j]);
-                        } else if(events[j].end_time && dt.getTime() > eventDate.getTime()) {
-                           dt.setHours(6, 0, 0, 0);
+                        if(!this.places.includes(events[j].place)) {
+                           if(dt.getTime() == eventDate.getTime()) {
+                              this.places.push(events[j].place);
 
-                           if(dt.getTime() <= eventEndTime.getTime()) {
-                              this.events.push(events[j]);
+                              if(this.placeMap.has(events[j].place)) {
+                                 var tempEvents = this.placeMap.get(events[j].place);
+                              } else {
+                                 tempEvents = [];
+                              }
+
+                              tempEvents.push(events[j]);
+                              this.placeMap.set(events[j].place, tempEvents);
+                           } else if(events[j].end_time && dt.getTime() > eventDate.getTime()) {
+                              dt.setHours(6, 0, 0, 0);
+
+                              if(dt.getTime() <= eventEndTime.getTime()) {
+                                 this.places.push(events[j].place);
+
+                                 if(this.placeMap.has(events[j].place)) {
+                                    var tempEvents = this.placeMap.get(events[j].place);
+                                 } else {
+                                    tempEvents = [];
+                                 }
+
+                                 tempEvents.push(events[j]);
+                                 this.placeMap.set(events[j].place, tempEvents);
+                              }
                            }
                         }
-
-                        // Need to figure out what to do when multiple events
-                        // happen on the same date at the same place
 
                         // Need to account for events that happen over a range
                         // of dates but don't happen continuously over the range
@@ -100,7 +121,7 @@ export class MapComponent implements OnInit {
                            eventEndTime.setDate(eventEndTime.getDate() + 1);
                         }
 
-                        // Maps events to their dates
+                        // Maps events to their locations and dates
                         while(eventDate.getTime() < eventEndTime.getTime()) {
                            var eventEndDate = new Date(eventEndTime);
                            eventEndDate.setHours(0, 0, 0, 0);
@@ -114,13 +135,23 @@ export class MapComponent implements OnInit {
                            }
 
                            if(this.eventMap.has(eventDate.getTime())) {
-                              var ary = this.eventMap.get(eventDate.getTime());
-                              ary.push(events[j]);
-                              this.eventMap.set(eventDate.getTime(), ary);
+                              var tempMap = this.eventMap.get(eventDate.getTime());
+
+                              if(tempMap.has(events[j].place)) {
+                                 var ary = tempMap.get(events[j].place);
+                                 ary.push(events[j]);
+                              } else {
+                                 ary = [events[j]];
+                              }
+
+                              tempMap.set(events[j].place, ary);
                            } else {
-                              this.eventMap.set(eventDate.getTime(), [events[j]]);
+                              tempMap = new Map();
+                              ary = events[j];
                            }
 
+                           tempMap.set(events[j].place, ary);
+                           this.eventMap.set(eventDate.getTime(), tempMap);
                            eventDate.setDate(eventDate.getDate() + 1);
                         }
                      }
@@ -142,25 +173,37 @@ export class MapComponent implements OnInit {
          this.displayDate = this.getDatePickerString();
          (<HTMLInputElement>document.getElementById('dateInput')).value = this.displayDate;
       } else {
-         this.events = this.eventMap.get(inputDate.getTime());
+         this.placeMap = this.eventMap.get(inputDate.getTime());
+
+         if(this.placeMap.keys()) {
+            this.places = <Place[]>Array.from(this.placeMap.keys());
+         } else {
+            this.places = [];
+         }
 
          // Do a check to make sure events have not ended already when the
          // current date is selected
-         if(inputDate.getTime() == today.getTime() && this.events) {
+         if(inputDate.getTime() == today.getTime() && this.places) {
             today = new Date();
 
-            for(var i = 0; i < this.events.length; i++) {
-               if(this.events[i].end_time) {
-                  var endDate = new Date(this.events[i].end_time);
+            for(var i = 0; i < this.places.length; i++) {
+               var events = this.placeMap.get(this.places[i]);
 
-                  if(today.getTime() >= endDate.getTime()) {
-                     this.events.splice(i, 1);
-                     i--;
+               for(var j = 0; j < events.length; j++) {
+                  if(events[j].end_time) {
+                     var endDate = new Date(events[j].end_time);
+
+                     if(today.getTime() >= endDate.getTime()) {
+                        events.splice(j, 1);
+                        j--;
+                     }
                   }
                }
+
+               this.placeMap.set(this.places[i], events);
             }
 
-            this.eventMap.set(inputDate.getTime(), this.events);
+            this.eventMap.set(inputDate.getTime(), this.placeMap);
          }
       }
    }
