@@ -147,7 +147,7 @@ export class MapComponent implements OnInit {
                               tempMap.set(events[j].place, ary);
                            } else {
                               tempMap = new Map();
-                              ary = events[j];
+                              ary = [events[j]];
                            }
 
                            tempMap.set(events[j].place, ary);
