@@ -42,7 +42,17 @@ export class EventService {
          this.fb.login({scope: this.scope}).then((response: LoginResponse) => {
             resolve(response);
          }).catch(e => reject(e));
-      })
+      });
+   }
+
+   getUserEvents(): Promise<Event[]> {
+      return new Promise((resolve, reject) => {
+         this.getUserId().then(userId => {
+            this.fbPagedRequest(userId + '/events').then(events => {
+               resolve(events);
+            }).catch(e => reject(e));
+         }).catch(e => reject(e));
+      });
    }
 
    getEventsForLikedPage(page): Promise<Event[]> {
